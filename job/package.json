@@ -1,0 +1,10 @@
+{
+	"name": "job",
+	"version": "0.0.1",
+	"main": "./lib/job.js",
+	"description": "Simple scheduler",
+	"engines": {
+		"node": "*"
+	},
+	"keywords": ["job", "scheduler"]
+}
