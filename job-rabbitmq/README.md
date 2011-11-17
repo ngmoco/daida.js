@@ -1,6 +1,8 @@
 ## About
 
-RabbitMQ plugin for job. 
+RabbitMQ plugin for Job. 
+So a task can be done in separate process.
+
 
 ## Installation
 
@@ -8,6 +10,8 @@ RabbitMQ plugin for job.
 > npm install job-rabbitmq
 
 ## Usage mode
+
+enqueueing task
 
 ```javascript
 var Job = require('job').Job;
@@ -29,13 +33,21 @@ var scheduledTask2 = {
     },
     MQ: new RMQStore({})
 };
-
 try {
     Job(scheduledTask);
     Job(scheduledTask2);
 } catch (err) {
     console.error(err);
+```
 
+retrieving task from queue server and do dequeued task in separate process
+
+```javascript
+var JW= require('./job-rabbitmq').RabbitMQWorker;
+var reg = new JW();
+// sampleReg.js file has what you want to do
+reg.addRegistry('./registry/sampleReg.js');
+reg.work();
 ```
 
 ## Reference
