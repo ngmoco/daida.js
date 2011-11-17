@@ -17,9 +17,17 @@ function colorize(str, color){
  */
 function dump(obj, color){
   if(color){
-    console.info(colorize(util.inspect(obj, true, null), color));
+    if (typeof obj === 'string'){
+      console.info(colorize(obj, color));
+    } else {
+      console.info(colorize(util.inspect(obj, true, null), color));
+    }
   } else {
-    console.info(util.inspect(obj, true, null));
+    if (typeof obj === 'string'){
+      console.info(obj);
+    } else {
+      console.info(util.inspect(obj, true, null));
+    }
   }
 }
 
@@ -29,9 +37,14 @@ function JobScheduler(taskObj){
   var util = require('util');
   // task queue
   this._jobqueue = [];
-  this.runAt = taskObj.runAt;
-  this.addTask(taskObj.task);
-  this.start();
+  // if task has MQ field, use MQ.queue() for queueing
+  if(taskObj.MQ){
+    taskObj.MQ.queue(taskObj);
+  } else {
+    this.runAt = taskObj.runAt;
+    this.addTask(taskObj.task);
+    this.start();
+  }
   taskObj.attempts = taskObj.max_attempts;
 }
 
@@ -49,7 +62,8 @@ JobScheduler.prototype = {
           this._jobqueue[i].call(this);
       }
     } catch(err) {
-      dump("grr", "white");
+      dump("An Error Occured", "red");
+      dump(err, "white");
     }
     // some logging system needed if it's finished properly
 
@@ -80,6 +94,7 @@ JobScheduler.prototype = {
 
 /**
  * JobHandler
+ *
  * taskObj Data Schema
  * taskObj = {
  *  runAt: "2011/11/10 09:00:00" // datetime, any string can be recognized as an argument of Date()
@@ -107,8 +122,10 @@ var Job = function(taskObj){
     taskObj.runAt = new Date(new Date().getTime() + taskObj.runAfter);
   }
 
-  console.info('Job name:        ' + taskObj.taskName );
-  console.info('job will run at: ' + taskObj.runAt );
+  if(taskObj.debug){
+    dump('Job name:        ' + taskObj.taskName, 'green');
+    dump('job will run at: ' + taskObj.runAt, 'green' );
+  }
 
   for( taskObj.attempts = 0; taskObj.attempts < max_attempts; taskObj.attempts++){
     try {
@@ -116,27 +133,13 @@ var Job = function(taskObj){
       new JobScheduler(taskObj);
     } catch(err) {
       dump("An error occured", "red");
+      dump(err, "cyan");
       taskObj.attempts -= 1;
       i--;
       // reschedule task till max_attempts;
       new JobScheduler(err, taskObj);
     }
   }
-}
-
-// TODO
-
-// separate producer/consumer
-// lock the job
-// unlock the job
-// report failed job
-// parallel job
-// serial job
-// connect to job queue server
-// retrieve jobs random
-// unlock all by this worker
-// show status
-// workers sleep if there are no jobs
-// watch runtime ( can we stop processing task? )
+};
 
 exports.Job = Job;

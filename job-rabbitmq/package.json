@@ -1,0 +1,13 @@
+{
+	"name": "job-rabbitmq",
+	"version": "0.0.1",
+	"main": "./lib/rabbitmq.js",
+	"description": "RabbitMQ plugin for job",
+	"engines": {
+		"node": "*"
+	},
+  "dependencies" : { 
+    "amqp": "*"
+  },
+	"keywords": ["job", "scheduler", "rabbitmq"]
+}
