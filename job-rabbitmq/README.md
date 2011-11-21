@@ -13,10 +13,9 @@ So a task can be done in separate process.
 
 enqueueing task
 
-```javascript
+```
 var Job = require('job').Job;
 var RMQStore = require('job-rabbitmq').RabbitMQ;
-
 scheduledTask = {
     taskName: "sample",
     runAt: "2011/11/11 00:38:00",
@@ -42,7 +41,7 @@ try {
 
 retrieving task from queue server and do dequeued task in separate process
 
-```javascript
+```
 var JW= require('./job-rabbitmq').RabbitMQWorker;
 var reg = new JW();
 // sampleReg.js file has what you want to do

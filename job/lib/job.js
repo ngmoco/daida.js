@@ -34,11 +34,11 @@ function dump(obj, color){
 
 // JobScheduler constructor
 function JobScheduler(taskObj){
-  var util = require('util');
   // task queue
   this._jobqueue = [];
   // if task has MQ field, use MQ.queue() for queueing
   if(taskObj.MQ){
+    //MQ plugin must support queue API
     taskObj.MQ.queue(taskObj);
   } else {
     this.runAt = taskObj.runAt;
@@ -49,21 +49,28 @@ function JobScheduler(taskObj){
 }
 
 JobScheduler.prototype = {
+  // can add multiple tasks but not used now.
   addTask: function(task){
-    if(typeof task !== 'function'){
+    if(task instanceof Array){
+      for( var i = 0; i < task.length; i++){
+        this._jobqueue.push(task[i]);
+      }
+    } else if(typeof task !== 'function'){
       console.error('Specified Task is not function');
+    } else {
+      this._jobqueue.push(task);
     }
-    this._jobqueue.push(task);
   },
   // do tasks
   doTask: function(){
     try {
-      for( var i = (this._jobqueue.length - 1); i >= 0; i--){
+      for(var i = 0; i < this._jobqueue.length; i++){
           this._jobqueue[i].call(this);
       }
     } catch(err) {
+      this.stop();
       dump("An Error Occured", "red");
-      dump(err, "white");
+      dump(err, "red");
     }
     // some logging system needed if it's finished properly
 
@@ -94,23 +101,31 @@ JobScheduler.prototype = {
 
 /**
  * JobHandler
+ * @param taskObj. data schema is described below.
  *
  * taskObj Data Schema
  * taskObj = {
  *  runAt: "2011/11/10 09:00:00" // datetime, any string can be recognized as an argument of Date()
- *  task: function(){} // needs to be function object
- *  argumentObj: {} // anything you want to set
- *  priority: 10 // default 0, higer number has more priority
+ *  task: samplefunc // functionName
+ *  argumentObj: {str: "test", person: "Bob"} // anything you want to set
+ *  max_attempts: 10 // retry
+ *
  * };
  */
 
 var Job = function(taskObj){
+  // debug purpose only
+  var debug = true;
+
+  if (! taskObj){
+    throw "task Object not specified. ";
+  }
 
   // max attempts
-  var max_attempts = 10;
+  var default_max_attempts = 10;
 
   if(! taskObj.attempts) taskObj.attempts = 0;
-  if(! taskObj.max_attempts) taskObj.max_attempts = max_attempts;
+  if(! taskObj.max_attempts) taskObj.max_attempts = default_max_attempts;
 
   // if runAfter param exists
   if(taskObj.runAfter) {
@@ -122,12 +137,12 @@ var Job = function(taskObj){
     taskObj.runAt = new Date(new Date().getTime() + taskObj.runAfter);
   }
 
-  if(taskObj.debug){
+  if(debug){
     dump('Job name:        ' + taskObj.taskName, 'green');
     dump('job will run at: ' + taskObj.runAt, 'green' );
   }
 
-  for( taskObj.attempts = 0; taskObj.attempts < max_attempts; taskObj.attempts++){
+  for( taskObj.attempts = 0; taskObj.attempts < taskObj.max_attempts; taskObj.attempts++){
     try {
       // some logic to watch the task's runtime
       new JobScheduler(taskObj);
