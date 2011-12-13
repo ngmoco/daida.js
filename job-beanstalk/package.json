@@ -1,0 +1,14 @@
+{
+	"name": "job-beanstalk",
+	"version": "0.0.1",
+	"main": "./lib/beanstalk.js",
+	"description": "Beanstalk plugin for job",
+	"engines": {
+		"node": "*"
+	},
+		"dependencies" : { 
+		"beanstalk_client": "*",
+		"beanstalk_worker": "*"
+  },
+	"keywords": ["job", "scheduler", "beanstalk"]
+}
