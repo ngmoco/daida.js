@@ -42,7 +42,7 @@ var scheduledTask2 = {
 
 try {
     Job(scheduledTask);
-   // Job(scheduledTask2);
+    Job(scheduledTask2);
 } catch (err) {
     console.error(err);
 }
