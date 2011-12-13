@@ -1,7 +1,7 @@
 /*
  * The test of the beanstalk worker
  */
-var Worker = require('./job-beanstalk').Worker;
+var Worker = require('../job-beanstalk').Worker;
 
 var options = {
   workers: 3,
