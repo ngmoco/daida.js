@@ -38,9 +38,9 @@ Client.prototype = {
     if(!taskObj){
         var error = new Error('You must pass a task to queue.');
         callback(error, null);
-        return error;
+        throw error;
     }
-    
+
     var connection;
     var qname = this.queueName;
 
@@ -50,6 +50,8 @@ Client.prototype = {
     }
 
     delay = delay/1000; //change from milliseconds to seconds for beanstalkd
+
+    delay = Math.floor(delay); //Round down for whole integer
 
     //We can't schedule into the past!
     if(delay < 0)
@@ -62,9 +64,9 @@ Client.prototype = {
     BeanstalkClient.connect(this.host+':'+this.port, function(error, connection){
         if(error){
             callback(error, null);
-            return error;
+            throw error;
         }
-        
+
         connection.use(qname, function(){
             //we are not exposing the priority now.
             //TODO: allow for Beanstalk message priority to
@@ -79,7 +81,7 @@ Client.prototype = {
 
                 if(error){
                     callback(error, null);
-                    return error;
+                    throw error;
                 }
 
                 callback(null, job_id);

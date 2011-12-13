@@ -38,7 +38,6 @@ function JobScheduler(taskObj){
   this._jobqueue = [];
   // if task has MQ field, use MQ.queue() for queueing
   if(taskObj.MQ){
-		console.log('we have MQ');
     //MQ plugin must support queue API
     taskObj.MQ.queue(taskObj);
   } else {
@@ -130,9 +129,7 @@ var Job = function(taskObj){
 
   // if runAfter param exists
   if(taskObj.runAfter) {
-		console.log('we have runAfter');
     if(typeof taskObj.runAfter !== 'number'){
-
       dump(taskObj.taskName + ': Specified runAfter must be number', "white");
       return;
     }
