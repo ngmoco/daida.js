@@ -1,3 +1,7 @@
+/*
+ * The test of the beanstalk worker
+ */
+var Worker = require('./job-beanstalk').Worker;
 
 var options = {
   workers: 3,
@@ -7,18 +11,5 @@ var options = {
   handlers: ['../../registry/test', ]
 };
 
-var Worker = require('./job-beanstalk').Worker;
-
 var worker1 = new Worker(options);
 worker1.work(); //aka worker1.start();
-
-/*var JW= require('./job-rabbitmq').RabbitMQWorker;
-
-var reg = new JW(
-    // RabbitMQ configuration
-    {
-        queueName: "jobs2",
-        queueOption: { autoDelete: true, durable: true, exclusive: false }
-    });
-reg.addRegistry('./registry/sampleReg.js');
-reg.work();*/

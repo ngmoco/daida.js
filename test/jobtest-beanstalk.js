@@ -1,6 +1,5 @@
-var Job = require('./job').Job;
-//var RMQStore = require('./job-rabbitmq').RabbitMQ;
-var BeanstalkClient = require('./job-beanstalk').Client;
+var Job = require('../job').Job;
+var BeanstalkClient = require('../job-beanstalk').Client;
 
 /**
  *  Declaring Task Object

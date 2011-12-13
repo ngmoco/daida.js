@@ -1,5 +1,5 @@
-var Job = require('./job').Job;
-var RMQStore = require('./job-rabbitmq').RabbitMQ;
+var Job = require('../job').Job;
+var RMQStore = require('../job-rabbitmq').RabbitMQ;
 
 /**
  *  Declaring Task Object
