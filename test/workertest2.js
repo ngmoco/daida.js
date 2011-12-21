@@ -1,4 +1,4 @@
-var JW= require('../strategies/rabbitmq').RabbitMQWorker;
+var JW= require('../index').RabbitMQWorker.RabbitMQWorker;
 
 var reg = new JW(
     // RabbitMQ configuration

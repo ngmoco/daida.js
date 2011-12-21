@@ -1,7 +1,7 @@
 /*
  * The test of the beanstalk worker
  */
-var Worker = require('../strategies/beanstalk').Worker;
+var Worker = require('../index').Beanstalk.Worker;
 
 var options = {
   workers: 3,
