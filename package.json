@@ -1,0 +1,10 @@
+{
+	"name": "ngcore-scheduler",
+	"version": "0.0.1",
+	"main": "index",
+	"description": "Multi-strategy task scheduler library.",
+	"engines": {
+		"node": "*"
+	},
+	"keywords": ["job", "scheduler", "worker", "delayed", "task"]
+}

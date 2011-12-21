@@ -1,5 +1,5 @@
-var Job = require('../job').Job;
-var BeanstalkClient = require('../job-beanstalk').Client;
+var Job = require('../strategies/job').Job;
+var BeanstalkClient = require('../strategies/beanstalk').Client;
 
 /**
  *  Declaring Task Object
