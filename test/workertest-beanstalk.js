@@ -8,7 +8,7 @@ var options = {
   server: '127.0.0.1:11300',
   tubes: ['jobscheduler'],
   ignore_default: true,
-  handlers: ['../../../registry/test', ] //these have to be relative to where the Worker code is located (see Worker require above)
+  handlers: ['../../../handlers/test', ] //these have to be relative to where the Worker code is located (see Worker require above)
 };
 
 var worker1 = new Worker(options);

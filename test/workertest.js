@@ -6,5 +6,5 @@ var reg = new JW(
         queueName: "jobs",
         queueOption: { autoDelete: true, durable: true, exclusive: false }
     });
-reg.addRegistry('../../../registry/sampleReg.js'); //this is relative to the location of the RabbitMQWorker file above (see JW require)
+reg.addRegistry('../../../handlers/sampleReg.js'); //this is relative to the location of the RabbitMQWorker file above (see JW require)
 reg.work();

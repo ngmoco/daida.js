@@ -1,4 +1,4 @@
-var Job = require('../index').Job.Job;
+var LocalClient = require('../index').Local.Client;
 var BeanstalkClient = require('../index').Beanstalk.Client;
 
 /**
@@ -41,8 +41,8 @@ var scheduledTask2 = {
  */
 
 try {
-    Job(scheduledTask);
-    Job(scheduledTask2);
+    scheduler.schedule(scheduledTask);
+    scheduler.schedule(scheduledTask2);
 } catch (err) {
     console.error(err);
 }
