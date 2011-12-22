@@ -42,62 +42,37 @@ var Queue = function localQueue(existingQueueArray){
 };
 
 Queue.prototype = {
-  queue: function(taskObj){
-  // debug purpose only
-  var debug = true;
+	queue: function(taskObj){
 
-  if (! taskObj){
-    throw "task Object not specified. ";
-  }
-
-  // max attempts
-  //var default_max_attempts = 10; //TODO make this configurable.
-
-  //if(! taskObj.attempts) taskObj.attempts = 0;
-  //if(! taskObj.max_attempts) taskObj.max_attempts = default_max_attempts;
-
-  // if runAfter param exists
-  if(taskObj.runAfter) {
-    if(typeof taskObj.runAfter !== 'number'){
-      dump(taskObj.taskName + ': Specified runAfter must be number', "white");
-      return;
-    }
-    taskObj.runAt = new Date(new Date().getTime() + taskObj.runAfter);
-  }
-
-  if(debug){
-    dump('Job name:        ' + taskObj.taskName, 'green');
-    dump('Job will run at: ' + taskObj.runAt, 'green' );
-  }
-
-  var job = new Job(taskObj); // a job is a task + a timer that will fire asynchronously
-  var worker = new Worker(job); //this is where the setTimeout is actually wrapped around the job
-
-  this._queue.push(job); // save a handle to the job incase we need to stop it before it fires
-
-  //for( taskObj.attempts = 0; taskObj.attempts < taskObj.max_attempts; taskObj.attempts++){
-    //try {
-      // some logic to watch the task's runtime
-      //new Job(taskObj);
-    //} catch(err) {
-      //dump("An error occured", "red");
-      //dump(err, "cyan");
-      //taskObj.attempts -= 1;
-      //i--;
-      // reschedule task till max_attempts;
-      //new Job(err, taskObj);
-    //}
-  }
-};
-
-
-  queueAll: function(tasks){
-    if(tasks instanceof Array) {
-		for(var task in tasks) {
-			this.queue(task);
+		if (!taskObj){
+			throw "task Object not specified. ";
 		}
-    }
-  },
+
+		// if runAfter param exists
+		if(taskObj.runAfter) {
+			if(typeof taskObj.runAfter !== 'number'){
+				dump(taskObj.taskName + ': Specified runAfter must be number', "white");
+				return false;
+			}
+			taskObj.runAt = new Date(new Date().getTime() + taskObj.runAfter);
+		}
+
+		var job = new Job(taskObj); // a job is a task + a timer that will fire asynchronously
+		var worker = new Worker(job); //this is where the setTimeout is actually wrapped around the job
+
+		this._queue.push(job); // save a handle to the job incase we need to stop it before it fires
+
+	},
+
+	queueAll: function(tasks){
+		if(tasks instanceof Array) {
+			for(var task in tasks) {
+				this.queue(task);
+			}
+			return true;
+		}
+		return false;
+	},
 };
 
 exports.Queue = Queue;
@@ -107,34 +82,20 @@ exports.Queue = Queue;
  */
 
 // Scheduler constructor
-function Scheduler(taskObj){
+function Scheduler(queue){
   // task queue
-  //this._jobqueue = [];
-  this._jobqueue = new Queue();
-
-  // if task has MQ field, use MQ.queue() for queueing
-  if(taskObj.MQ){
-    //MQ plugin must support queue API
-    taskObj.MQ.queue(taskObj);
-  } else {
-    //this.runAt = taskObj.runAt;
-    this._jobQueue.queue(taskObj);
-	//this.start();
-
-	//taskObj.attempts = taskObj.max_attempts;
-  }
-}
+  this._jobqueue = queue; //here we dependency inject constructor style
+};
 
 Scheduler.prototype = {
   // can add multiple tasks but not used now.
-  addTask: function(task){
+  schedule: function(task){
     if(task instanceof Array){
 		this._jobqueue.queueAll(task);
     } else {
-      this._jobqueue.queue(task);
+		this._jobqueue.queue(task);
     }
   },
-
 };
 
 /**
@@ -144,43 +105,46 @@ Scheduler.prototype = {
 
 var Worker = function Worker(job) {
 	this._job = job;
-	this._job.setState("delayed")
+
+	var timeout = new Date(this._job.runAt) - new Date();
+
+    if (timeout >= 0) {
+		this._job.setState(this._job.STATES.DELAYED);
+		// if we don't use setTimeout, nextTick would be help.
+		this._timeoutId = setTimeout(function(self){
+			self.work();
+		}, timeout, this);
+	}
 };
 
 Worker.prototype = {
-	doTask: function(){
-		this._job.setState("started");
-		this._job.run(); // once this job is running kt should set state to running
-		this._job.setState("finished"); // of coursr the above is async so this needs to be at the end of run. msybe usr closure trick from db code
+	work: function(){
+		this._job.setState(this._job.STATES.STARTED);
+		try{
+			this._job.run(function(error){
+				if(error){
+					this._job.setState(this._job.STATES.FAILED);
+				}
+				else {
+					this._job.setState(this._job.STATES.FINISHED); // of coursr the above is async so this needs to be at the end of run. msybe usr closure trick from db code
+				}
+			}.bind(this));
+		} catch (Error e){
+               this._job.setState(this._job.STATES.FAILED);
+		}
 
 	},
 
-  // start worker
-  start: function(){
-    if(this.running) return;
-    // now() + max_runtime
-    var timeout = new Date(this._job.runAt) - new Date();
-    //this.call = 0;
-    if (timeout >= 0) {
-      this.running = true;
+	cancel: function(){
+		//we can only cancel a job if it hasn't started
+		if(this._job.getState >= this._job.STATES.RUNNING)
+			return false;
 
-      // if we don't use setTimeout, nextTick would be help.
-      this._timeoutId = setTimeout(function(self){
-        self.running = false;
-        self.doTask();
-      }, timeout, this);
-    } else {
-      this.running = false;
-      console.error("too late to do it.");
-    }
-  },
-  stop: function(){
-    clearTimeout(this._timeoutId);
-	this.running = false;
-	this._job.setState("stopped");
-  }
-
-}
+		clearTimeout(this._timeoutId);
+		this._job.setState(this._job.STATES.STOPPED);
+		return true;
+	},
+};
 
 /**
  * JobHandler
@@ -196,25 +160,34 @@ Worker.prototype = {
  * };
  */
 var Job = function Job(task) {
-	if(err){
-		console.log('There was an error the last time this job was tried. Error was: ' + error ); //if the task failed last time
-	}
-
 	this._task = task;
-	this._status = "new";
+	this.setState(this.STATES.NEW);
 	//create new worker in here for this job.
+
+	this.STATES = {
+		'NEW': 0,
+		'QUEUED': 1,
+		'DELAYED': 2,
+		'RUNNING': 3,
+		'FINISHED': 4,
+		'STOPPED': 5,
+		'FAILED': 6,
+	}
 }
 
 Job.prototype = {
-	setStatus: function(status){
-		this._status = status;
+	setState: function(state){
+		this._status = state;
+		console.log('state changed to' + state);
 	},
 
-	run: function(){
-		this.setStatus("running");
-		//TODO we should probably pass call back of workers post run function into the task call belw
-		// so that when the task is finished async or not it will pass controll back to wlrker to cleanup
-		this._task.task.call(this); // this is where the action happens might not be called task check the task objects format
+	run: function(callback){
+		this.setState(this.STATES.RUNNING);
+		//TODO we need to enforce that all tasks accept the call back of
+		//workers "post run function" in the taskFunc call below
+		//so that when the task is finished async or not it will pass controll
+		//back to worker for post task cleanup
+		this._task.taskFunc.call(this, this._task.taskArgObj, callback); // this is where the action happens might not be called task check the task objects format
 	},
-}
+};
 exports.Job = Job;
