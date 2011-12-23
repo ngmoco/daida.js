@@ -1,38 +1,32 @@
-var LocalClient = require('../index').Local.Client;
+var Scheduler = require('../index').Local.Scheduler;
+var LocalQueue = require('../index').Local.Queue;
 var BeanstalkClient = require('../index').Beanstalk.Client;
+
+var localQueue = new LocalQueue();
+
+var beanstalkClient = new BeanstalkClient({
+	host: 'localhost',
+    port: '11300',
+	queueName: "jobscheduler"
+});
+
+var supervisor = new Supervisor().start(); //the supervisor will start it's nextTick callback loop waiting for work
+var scheduler = new Scheduler(supervisor, localQueue); //pass in queue strategy via constructor style DI.
 
 /**
  *  Declaring Task Object
  */
 var scheduledTask = {
     taskName: "sample",
-    runAt: "2011/12/13 13:53:00",
+    runAt: "1000",
     taskFunc: "test",
     taskArgObj: {str: 'test task1'},
-    MQ: new BeanstalkClient(
-        // Beanstalk configuration
-        // { host: 'localhost'
-        // , port: '11300'
-        // , queueName: "bar";
-        // }
-        {
-          queueName: "jobscheduler",
-        }
-    )
 };
 var scheduledTask2 = {
     taskName: "sample2",
     runAfter: 3000, // msec, means this task will be fired after 10sec
     taskFunc: "foo",
     taskArgObj: {str: 'test task2'},
-    // if you have MessageQueue Store, specify that like this.
-    MQ: new BeanstalkClient(
-        {
-          host: 'localhost',
-          port: '11300',
-          queueName: "jobscheduler"
-        }
-    )
 };
 
 
@@ -42,7 +36,7 @@ var scheduledTask2 = {
 
 try {
     scheduler.schedule(scheduledTask);
-    scheduler.schedule(scheduledTask2);
+	scheduler.schedule(scheduledTask2);
 } catch (err) {
     console.error(err);
 }
