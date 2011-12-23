@@ -1,8 +1,8 @@
 var handlers = {
 
-  test: function(data, cb) {
+  bar: function(data, cb) {
     var callback = cb || function() { /* noOp */ };
-    require('sys').puts('test job passed data: ' + JSON.stringify(data));
+    console.log('test job passed data: ' + JSON.stringify(data));
     callback();
   },
 
@@ -14,5 +14,5 @@ var handlers = {
 
 };
 exports.handlers = handlers; // for node_beanstalk_worker compat
-exports.test = handlers.test;
+exports.bar = handlers.bar;
 exports.foo = handlers.foo;

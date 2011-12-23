@@ -17,14 +17,11 @@ function augmentAuthWithStrategy(filename, path) {
           return require('./' + path+ '/' + name);
         },
         enumerable:true});
-
-	  console.log('Added strategy: ' + camelCaseName);
   }
 }
 
-console.log('about to add stragegies');
-
-// The following assumes that the strategies will either be in a file inside the strategies folder
+// The following assumes that the strategies will either be in a file inside
+// the strategies folder
 // or in a subdirectory that follows the folders as modules guidelines.
 // See: http://nodejs.org/docs/v0.6.6/api/modules.html#folders_as_Modules
 //

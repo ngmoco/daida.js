@@ -1,4 +1,5 @@
 var Scheduler = require('../index').Local.Scheduler;
+var Supervisor = require('../index').Local.Supervisor;
 var LocalQueue = require('../index').Local.Queue;
 var BeanstalkClient = require('../index').Beanstalk.Client;
 
@@ -10,23 +11,25 @@ var beanstalkClient = new BeanstalkClient({
 	queueName: "jobscheduler"
 });
 
-var supervisor = new Supervisor().start(); //the supervisor will start it's nextTick callback loop waiting for work
+var supervisor = new Supervisor(); //the supervisor will start it's nextTick callback loop waiting for work
 var scheduler = new Scheduler(supervisor, localQueue); //pass in queue strategy via constructor style DI.
+
+supervisor.start();
 
 /**
  *  Declaring Task Object
  */
 var scheduledTask = {
-    taskName: "sample",
-    runAt: "1000",
-    taskFunc: "test",
-    taskArgObj: {str: 'test task1'},
+    taskName: "test",
+    runAfter: 1000,
+    taskFunc: "foo",
+    taskArgObj: {name: 'baz', str: 'test task1'},
 };
 var scheduledTask2 = {
-    taskName: "sample2",
+    taskName: "test",
     runAfter: 3000, // msec, means this task will be fired after 10sec
-    taskFunc: "foo",
-    taskArgObj: {str: 'test task2'},
+    taskFunc: "bar",
+    taskArgObj: {name: 'beef', str: 'test task2'},
 };
 
 
@@ -37,6 +40,7 @@ var scheduledTask2 = {
 try {
     scheduler.schedule(scheduledTask);
 	scheduler.schedule(scheduledTask2);
+	setTimeout(function(){supervisor.stop();},10000);
 } catch (err) {
     console.error(err);
 }

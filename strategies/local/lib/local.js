@@ -59,7 +59,7 @@ Queue.prototype = {
 
 		var job = new Job(taskObj); // a job is a task + a timer that will fire asynchronously
 
-		job.ID = this._queue.push(job); // save a handle to the job incase we need to stop it before it fires
+		job.setId(this._queue.push(job)); // save a handle to the job incase we need to stop it before it fires
 
 		return job;
 	},
@@ -94,24 +94,27 @@ Supervisor.prototype = {
 	addJob: function(job, pre_run_cb, error_cb) {
 		var worker = new Worker(job);
 		worker.setPreRunCallback(pre_run_cb);
-		worker.setPostRunCallback(this.workerDone);
+		worker.setPostRunCallback(this.workerDone.bind(this));
 		worker.setErrorCallback(this.workerError(error_cb)); //pass in the closure creator result with job error cb
-		worker.setID(this._workers.push(worker)); //this way the worker knows where it is in the workers array
+		//the following does not work as the id get's set too late. needs to
+		//get set before it is pushed onto the queue
+		worker.setId(this._workers.push(worker)); //this way the worker knows
+		//where it is in the workers array
 		this.numWorkers++;
 	},
 
 	workerError: function(job_error_cb){
-		return function(worker){
+		return function(error, worker){
 			this.workerDone(worker);
-			job_error_cb(worker._job);
-		}
+			job_error_cb(error, worker._job);
+		}.bind(this);
 	},
 
 	workerDone: function(worker){
 		//this is where we could handle any errors thrown by the job.
 		//like putting it into a failed queue of some sort
 		this.numWorkers--;
-		delete this.workers[worker.ID]; //we don't want to use splice since it will re-shuffle the array.
+		delete this._workers[worker._id]; //we don't want to use splice since it will re-shuffle the array.
 	},
 
 	isWorkFinished: function(){
@@ -122,23 +125,24 @@ Supervisor.prototype = {
 		this._runnable = false; //everything will stop on next trip around the event loop
 	},
 
-	start: function(callback) {
+	start: function() {
 		this._runnable = true;
-		this.run(callback);
+		this.run();
 	},
 
-	run: function(callback) {
+	run: function() {
 		if(!this._runnable)
-			callback(true); //someone called stop. so send it on home!
+			return true; //stop has been called so let's break outa here.
 
 		if(this.isWorkFinished()){
-			process.nextTick(this.run);
+			process.nextTick(this.run.bind(this));
 		} else {
 			for(key in this._workers){
 				var worker = this._workers[key];
 				if(!worker.isRunning)
 					worker.run();
 			}
+			process.nextTick(this.run.bind(this));
 		}
 	}
 };
@@ -172,27 +176,29 @@ Scheduler.prototype = {
 			var jobs = this._jobqueue.queueAll(task);
             for(key in jobs){
 				var job = jobs[key];
-				if(supervisor){
+				if(this._supervisor){
 					this._supervisor.addJob(job,
 						function(){
 							this.dequeueJob(job);
-						},
-						function(){
+						}.bind(this),
+						function(error, job){
+							console.log('There was an error with the job. Error was: ' + error);
 							this.queueError(job);
-						}
+						}.bind(this)
 					);
 				}
             }
 		} else {
 			var job = this._jobqueue.queue(task);
-			if(supervisor){
+			if(this._supervisor){
 				this._supervisor.addJob(job,
 					function(){
 						this.dequeueJob(job);
-					},
-					function(){
+					}.bind(this),
+					function(error, job){
+						console.log('There was an error with the job. Error was: ' + error);
 						this.queueError(job);
-					}
+					}.bind(this)
 				);
 			}
 		}
@@ -215,15 +221,19 @@ exports.Scheduler = Scheduler;
  */
 
 var Worker = function Worker(job, pre_run_cb, post_run_cb, error_cb) {
-	this.ID = 0;
+	this._id = 0;
 	this._job = job;
 	this.isRunning = false;
 	this.preRunCallback = pre_run_cb;
 	this.postRunCallback = post_run_cb;
-	this.errorCallBack = error_call_cb;
+	this.errorCallBack = error_cb;
 };
 
 Worker.prototype = {
+
+	setId: function(worker_id){
+		this._id = worker_id;
+	},
 
 	setPreRunCallback: function(pre_run_cb) {
 		this.preRunCallback = pre_run_cb;
@@ -238,11 +248,12 @@ Worker.prototype = {
 	},
 
 	run: function(){
-		if(!this.errorCallback)
+		if(!this.errorCallback) {
 			this.errorCallback = function(error) {
-				console.log(error);
+				console.error(error);
 				throw Error(error);
 			};
+		}
 
 		if(this.isRunning)
 			this.errorCallback('Already Running');
@@ -257,20 +268,22 @@ Worker.prototype = {
 			this._timeoutId = setTimeout(function(self){
 				self.work(self.preRunCallback, self.postRunCallback, self.errorCallback); //this should be set by the scheduler via dependency injection setter style
 			}, timeout, this);
+		} else {
+			this.errorCallback('Job expired before run.', this);
 		}
 	},
 
 	work: function(pre_run_cb, post_run_cb, error_cb){
 		pre_run_cb(); //this is where the job should be dequeued;
-		this._job.setState(this._job.STATES.STARTED);
 		try{
 			this._job.run(function(error){
 				if(error){
 					this._job.setState(this._job.STATES.FAILED);
+					error_cb(error, this);
 				}
 				else {
-					this._job.setState(this._job.STATES.FINISHED); // of coursr the above is async so this needs to be at the end of run. msybe usr closure trick from db code
-					post_run_cb(null, this);
+					this._job.setState(this._job.STATES.FINISHED);
+					post_run_cb(this);
 				}
 			}.bind(this));
 		} catch (err){
@@ -308,9 +321,15 @@ exports.Worker = Worker;
  * };
  */
 var Job = function Job(task) {
+	this._id = 0;
 	this._task = task;
 	this.setState(this.STATES.NEW);
-	//create new worker in here for this job.
+
+	//now consume all the fields from the task:
+	for(key in task){
+		if(task.hasOwnProperty(key))
+			this[key] = task[key];
+	}
 };
 
 Job.prototype = {
@@ -324,9 +343,12 @@ Job.prototype = {
 		'FAILED': 6,
 	},
 
+ 	setId: function(job_id){
+		this._id = job_id;
+	},
+
 	setState: function(state){
 		this._status = state;
-		console.log('state changed to' + state);
 	},
 
 	run: function(callback){
@@ -335,7 +357,9 @@ Job.prototype = {
 		//workers "post run function" in the taskFunc call below
 		//so that when the task is finished async or not it will pass controll
 		//back to worker for post task cleanup
-		this._task.taskFunc.call(this, this._task.taskArgObj, callback); // this is where the action happens might not be called task check the task objects format
+		//
+		var runnable = require('../../../handlers/'+this.taskName)[this.taskFunc];
+		runnable.call(this, this.taskArgObj, callback); // this is where the action happens might not be called task check the task objects format
 	},
 };
 exports.Job = Job;
