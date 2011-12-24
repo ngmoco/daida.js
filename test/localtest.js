@@ -1,15 +1,8 @@
 var Scheduler = require('../index').Local.Scheduler;
 var Supervisor = require('../index').Local.Supervisor;
 var LocalQueue = require('../index').Local.Queue;
-var BeanstalkClient = require('../index').Beanstalk.Client;
 
 var localQueue = new LocalQueue();
-
-var beanstalkClient = new BeanstalkClient({
-	host: 'localhost',
-    port: '11300',
-	queueName: "jobscheduler"
-});
 
 var supervisor = new Supervisor(); //the supervisor will start it's nextTick callback loop waiting for work
 var scheduler = new Scheduler(supervisor, localQueue); //pass in queue strategy via constructor style DI.
@@ -40,7 +33,7 @@ var scheduledTask2 = {
 try {
     scheduler.schedule(scheduledTask);
 	scheduler.schedule(scheduledTask2);
-	setTimeout(function(){supervisor.stop();},10000);
+	setTimeout(function(){supervisor.stop();},10000);//kill the supervisor after 10 seconds.
 } catch (err) {
     console.error(err);
 }
