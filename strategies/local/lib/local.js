@@ -98,7 +98,7 @@ Supervisor.prototype = {
 		worker.setErrorCallback(this.workerError(error_cb)); //pass in the closure creator result with job error cb
 		//the following does not work as the id get's set too late. needs to
 		//get set before it is pushed onto the queue
-		worker.setId(this._workers.push(worker)); //this way the worker knows
+		worker.setId(this._workers.push(worker)-1); //this way the worker knows
 		//where it is in the workers array
 		this.numWorkers++;
 	},
@@ -114,7 +114,8 @@ Supervisor.prototype = {
 		//this is where we could handle any errors thrown by the job.
 		//like putting it into a failed queue of some sort
 		this.numWorkers--;
-		delete this._workers[worker._id]; //we don't want to use splice since it will re-shuffle the array.
+		delete this._workers[worker._id]; //we don't want to use splice since
+		//it will re-shuffle the array.
 	},
 
 	isWorkFinished: function(){
@@ -291,9 +292,33 @@ Job.prototype = {
 		//workers "post run function" in the taskFunc call below
 		//so that when the task is finished async or not it will pass controll
 		//back to worker for post task cleanup
-		//
-		var runnable = require('../../../handlers/'+this.taskName)[this.taskFunc];
-		runnable.call(this, this.taskArgObj, callback); // this is where the action happens might not be called task check the task objects format
+		var runnable = function(){ /* noOp */ };
+		if(this.task){
+			//the runnable was already on the task.
+			runnable = this.task;
+		}
+		else {
+			runnable = require('../../../handlers/'+this.taskName)[this.taskFunc];
+		}
+
+		if(runnable instanceof Array){
+			var accumulator = runnable.length-1;
+			var cbWhenAllFinished = function(){
+				if(accumulator === 0){
+					callback();
+				}
+
+				accumulator--;
+			};
+
+			for(key in runnable){
+				var run = runnable[key];
+				run.call(this, this.taskArgObj, cbWhenAllFinished); // this is where the action happens might not be called task check the task objects format
+
+			}
+		} else {
+			runnable.call(this, this.taskArgObj, callback); // this is where the action happens might not be called task check the task objects format
+		}
 	},
 };
 exports.Job = Job;

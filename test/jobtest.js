@@ -1,5 +1,18 @@
-var Job = require('../index').Job.Job;
-var RMQStore = require('../index').RabbitMQ.RabbitMQ;
+var Job = require('../index').Local.Job;
+var RMQClient = require('../index').Local.RabbitMQ;
+
+var Scheduler = require('../index').Scheduler;
+
+var jobQueue = new RMQClient({
+	queueName: "bar",
+	queueOption: {
+		autoDelete: true,
+		durable: true,
+		exclusive: false
+	}
+});
+
+var scheduler = new Scheduler(jobQueue);
 
 /**
  *  Declaring Task Object
@@ -9,36 +22,12 @@ var scheduledTask = {
     runAt: "2011/11/21 23:17:00",
     taskFunc: "dump",
     taskArgObj: {str: 'test task1'},
-    MQ: new RMQStore(
-        // RabbitMQ configuration
-        // { host: 'localhost'
-        // , port: 5672
-        // , login: 'guest'
-        // , password: 'guest'
-        // , vhost: '/'
-        // }
-        // or, can use URL
-        // {
-        // url: amqp[s]://[user:password@]hostname[:port][/vhost]
-        // }
-        {
-          queueName: "bar",
-          queueOption: { autoDelete: true, durable: true, exclusive: false }
-        }
-    )
 };
 var scheduledTask2 = {
-    taskName: "sample2",
+    taskName: "sample",
     runAfter: 3000, // msec, means this task will be fired after 10sec
     taskFunc: "dump2",
     taskArgObj: {str: 'test task2'},
-    // if you have MessageQueue Store, specify that like this.
-    MQ: new RMQStore(
-        // RabbitMQ configuration
-        {
-          queueName: "jobs2"
-        }
-    )
 };
 var scheduledTask3 = {
     //local task will be fired with setTimeout

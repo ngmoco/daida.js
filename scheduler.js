@@ -27,13 +27,8 @@ Scheduler.prototype = {
 				var job = jobs[key];
 				if(this._supervisor){
 					this._supervisor.addJob(job,
-						function(){
-							this.dequeueJob(job);
-						}.bind(this),
-						function(error, job){
-							console.log('There was an error with the job. Error was: ' + error);
-							this.queueError(job);
-						}.bind(this)
+						this.postRunCallback.bind(this),
+						this.errorCallback.bind(this)
 					);
 				}
             }
@@ -41,16 +36,20 @@ Scheduler.prototype = {
 			var job = this._jobqueue.queue(task);
 			if(this._supervisor){
 				this._supervisor.addJob(job,
-					function(){
-						this.dequeueJob(job);
-					}.bind(this),
-					function(error, job){
-						console.log('There was an error with the job. Error was: ' + error);
-						this.queueError(job);
-					}.bind(this)
+					this.postRunCallback.bind(this),
+					this.errorCallback.bind(this)
 				);
 			}
 		}
+	},
+
+	errorCallback: function(error, job){
+		console.error('There was an error with the job. Error was: ' + error);
+		this.queueError(job);
+	},
+
+	postRunCallback: function(job){
+		this.dequeueJob(job);
 	},
 
 	queueError: function(job){
