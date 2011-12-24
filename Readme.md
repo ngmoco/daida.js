@@ -1,1 +1,1 @@
-The scheduler!
+The NEW scheduler!Now with clearly divisioned scheduler/queue/worker code!See the test/localtest.js for how the latest and greatest works!RabbitMQ and Beanstlkd strategies will be updated to work with the newscheduler system shortly.
