@@ -3,6 +3,10 @@ var path = require('path');
 
 var exports = module.exports;
 
+//include the scheduler
+
+exports.Scheduler = require('./scheduler').Scheduler;
+
 var STRATEGY_EXCLUSIONS = [];
 
 function augmentAuthWithStrategy(filename, path) {

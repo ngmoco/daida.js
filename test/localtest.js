@@ -1,4 +1,4 @@
-var Scheduler = require('../index').Local.Scheduler;
+var Scheduler = require('../index').Scheduler;
 var Supervisor = require('../index').Local.Supervisor;
 var LocalQueue = require('../index').Local.Queue;
 
