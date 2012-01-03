@@ -1,3 +1,5 @@
+var Worker = require('./worker').Worker;
+
 var Supervisor = function Supervisor(){
 	this._workers = [];
 	this.numWorkers = 0;//handle the possibility of sparse arrays

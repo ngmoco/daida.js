@@ -12,7 +12,7 @@ var BeanstalkClient = require('beanstalk_client').Client;
  * }
  */
 
-var Client = function(){
+var Queue = function(){
 
     this.config = arguments[0] || {};
 
@@ -23,7 +23,7 @@ var Client = function(){
 
 };
 
-Client.prototype = {
+Queue.prototype = {
   // queue() is exposed to JobScheduler
   queue: function(taskObj, cb){
 
@@ -52,9 +52,9 @@ Client.prototype = {
     if(delay < 0)
         delay = 0;
 
-    var data = taskObj.taskArgObj;
-    var type = taskObj.taskFunc;
-    var job_data = {'type':type, 'data':data}; //this is the message format that node_beanstalk_worker likes.
+    var data = taskObj.args;
+    var type = taskObj.handlerNamespace + '.' + taskObj.handlerFunction;
+    var job_data = {'type': type, 'data': data}; //this is the message format that node_beanstalk_worker likes.
 
     BeanstalkClient.connect(this.host+':'+this.port, function(error, connection){
         if(error){
@@ -86,6 +86,4 @@ Client.prototype = {
   }
 };
 
-exports.Client = Client;
-
-
+exports.Queue = Queue;

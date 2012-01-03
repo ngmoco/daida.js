@@ -1,3 +1,5 @@
+var Job = require('./job').Job;
+
 /**
  * The Queue object
  */

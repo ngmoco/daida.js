@@ -13,26 +13,24 @@ supervisor.start();
  *  Declaring Task Object
  */
 var scheduledTask = {
-    taskName: "test",
+    handlerNamespace: "Test",
     runAfter: 1000,
-    taskFunc: "foo",
-    taskArgObj: {name: 'baz', str: 'test task1'},
+    handlerFunction: "foo",
+    args: {name: 'baz', str: 'test task1'},
 };
 var scheduledTask2 = {
-    taskName: "test",
+    handlerNamespace: "Test",
     runAfter: 3000, // msec, means this task will be fired after 10sec
-    taskFunc: "bar",
-    taskArgObj: {name: 'beef', str: 'test task2'},
+    handlerFunction: "bar",
+    args: {name: 'beef', str: 'test task2'},
 };
 var scheduledTask3 = {
-    taskName: "sample",
+    handlerNamespace: "Sample",
     runAt: "2011/12/24 08:39:30",
-    taskFunc: "dump",
-    taskArgObj: {str: 'test task1'},
+    handlerFunction: "dump",
+    args: {str: 'test task1'},
 };
 var scheduledTask4 = {
-    //local task will be fired with setTimeout
-    taskName: "localTask",
     runAfter: 2000, // msec, means this task will be fired after 10sec
     task: function(args, callback){ // can specify function directly in "task" property
 		console.log('local task');
@@ -40,8 +38,6 @@ var scheduledTask4 = {
     }
 };
 var scheduledTask5 = {
-    //local task will be fired with setTimeout
-    taskName: "localTask2",
     runAfter: 3000, // msec, means this task will be fired after 10sec
     task: [function test(args, callback){ // can use array here.
 		console.log('first local task');

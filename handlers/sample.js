@@ -1,13 +1,22 @@
 var util = require('util');
-function dump(taskObj){
-  console.log(util.inspect(taskObj));
-  console.log(taskObj.str);
-}
 
-function dump2(taskObj){
-  console.log(util.inspect(taskObj));
-  console.log(taskObj.str);
-}
-exports.dump = dump;
-exports.dump2 = dump2;
+exports.handlerNamespace = "Sample";
 
+var handlers = {
+	dump: function(taskObj, cb){
+		var callback = cb || function() { /* noOp */ };
+		console.log(util.inspect(taskObj));
+		console.log(taskObj.str);
+		callback();
+	},
+
+	dump2: function(taskObj, cb){
+		var callback = cb || function() { /* noOp */ };
+		console.log(util.inspect(taskObj));
+		console.log(taskObj.str);
+		callback();
+	},
+}
+exports.handlers = handlers;
+exports.dump = handlers.dump;
+exports.dump2 = handlers.dump2;

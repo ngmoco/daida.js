@@ -1,3 +1,6 @@
+
+exports.handlerNamespace = 'Test';
+
 var handlers = {
 
   bar: function(data, cb) {

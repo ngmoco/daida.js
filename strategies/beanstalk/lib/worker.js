@@ -19,7 +19,17 @@ var Worker = function() {
 
     this.handlers = [];
     for(var i=0; i< this.options.handlers.length; i++) {
-        this.handlers.push(require(this.options.handlers[i]).handlers); //require from filesystem and put in registry
+        var currentHandlerNamespace = require(this.options.handlers[i]);
+		var namespaceName = currentHandlerNamespace.handlerNamespace;
+		var handlersWithNSPrefix = [];
+		for( var key in currentHandlerNamespace.handlers ) {
+			if( currentHandlerNamespace.hasOwnProperty(key)) {
+				var handlerNameWithNSPrefix = namespaceName + '.' + key;
+				console.log(handlerNameWithNSPrefix);
+				handlersWithNSPrefix[handlerNameWithNSPrefix] = currentHandlerNamespace.handlers[key];
+			}
+		}
+		this.handlers.push(handlersWithNSPrefix); //require from filesystem and put in registry
     }
 
 	//TODO: put the following scalar into a configuration file

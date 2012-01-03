@@ -54,7 +54,7 @@ Job.prototype = {
 			runnable = this.task;
 		}
 		else {
-			runnable = require('../../../handlers/'+this.taskName)[this.taskFunc];
+			runnable = require('../../../handlers/'+this.handlerNamespace.toLowerCase())[this.handlerFunction];
 		}
 
 		if(runnable instanceof Array){
@@ -69,11 +69,11 @@ Job.prototype = {
 
 			for(key in runnable){
 				var run = runnable[key];
-				run.call(this, this.taskArgObj, cbWhenAllFinished); // this is where the action happens might not be called task check the task objects format
+				run.call(this, this.args, cbWhenAllFinished); // this is where the action happens might not be called task check the task objects format
 
 			}
 		} else {
-			runnable.call(this, this.taskArgObj, callback); // this is where the action happens might not be called task check the task objects format
+			runnable.call(this, this.args, callback); // this is where the action happens might not be called task check the task objects format
 		}
 	},
 };

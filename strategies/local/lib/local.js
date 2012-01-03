@@ -1,8 +1,9 @@
 /**
- * Scheduler for batch running a controlled amount of tasks per interval
+ * Local eventloop backed Queue and Worker strategy
+ *
  */
 
-var Queue = exports.Queue = require('./queue');
-var Supervisor = exports.Supervisor = require('./supervisor');
-var Worker = exports.Worker = require('./worker');
-var Job = exports.Job = require('./job');
+var Queue = exports.Queue = require('./queue').Queue;
+var Supervisor = exports.Supervisor = require('./supervisor').Supervisor;
+var Worker = exports.Worker = require('./worker').Worker;
+var Job = exports.Job = require('./job').Job;

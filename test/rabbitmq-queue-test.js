@@ -1,10 +1,9 @@
-var Job = require('../index').Local.Job;
-var RMQClient = require('../index').Local.RabbitMQ;
+var RabbitMQQueue = require('../index').RabbitMQ.Queue;
 
 var Scheduler = require('../index').Scheduler;
 
-var jobQueue = new RMQClient({
-	queueName: "bar",
+var rabbitMQQueue = new RabbitMQQueue({
+	queueName: "jobscheduler",
 	queueOption: {
 		autoDelete: true,
 		durable: true,
@@ -12,7 +11,7 @@ var jobQueue = new RMQClient({
 	}
 });
 
-var scheduler = new Scheduler(jobQueue);
+var scheduler = new Scheduler(rabbitMQQueue);
 
 /**
  *  Declaring Task Object
@@ -52,15 +51,15 @@ var scheduledTask4 = {
 
 
 /**
- * enque tasks
+ * enqueue tasks
  */
 
 try {
-    Job(scheduledTask);
-    Job(scheduledTask2);
-    Job(scheduledTask3);
-    Job(scheduledTask4);
-    Job({
+    scheduler.schedule(scheduledTask);
+    scheduler.schedule(scheduledTask2);
+    scheduler.schedule(scheduledTask3);
+    scheduler.schedule(scheduledTask4);
+    scheduler.schedule({
         taskName: "local task test",
         runAfter: 2000,
         task: function(){

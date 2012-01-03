@@ -3,5 +3,5 @@
  *
  */
 
-var Queue = exports.Queue = require('./queue');
-var Worker = exports.Worker = require('./worker');
+var Queue = exports.Queue = require('./queue').Queue;
+var Worker = exports.Worker = require('./worker').Worker;

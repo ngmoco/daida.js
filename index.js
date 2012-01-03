@@ -4,18 +4,18 @@ var path = require('path');
 var exports = module.exports;
 
 //include the scheduler
-
 exports.Scheduler = require('./scheduler').Scheduler;
 
+//If you want to remove a strategy from the module
 var STRATEGY_EXCLUSIONS = [];
 
-function augmentAuthWithStrategy(filename, path) {
+function augmentWithStrategy(filename, path) {
   if (!STRATEGY_EXCLUSIONS[filename] && filename[0] != '_') {
       var name = filename;
 	  if(/\.js$/.test(filename))
 		name = filename.substr(0, filename.lastIndexOf('.'));
 
-	  var camelCaseName= name.charAt(0).toUpperCase() + name.substr(1).toLowerCase();
+	  var camelCaseName = name.charAt(0).toUpperCase() + name.substr(1).toLowerCase();
       Object.defineProperty(exports, camelCaseName, {
         get: function() {
           return require('./' + path+ '/' + name);
@@ -41,11 +41,11 @@ fs.readdirSync(__dirname + '/strategies').forEach(function(filename){
 		//the following looks for files in the directory indicating the dir follows the
 		//guidlines for using directories as modules. See more: http://nodejs.org/docs/v0.6.6/api/modules.html#folders_as_Modules
 		if(path.existsSync(fullDirPath + '/package.json') || path.existsSync(fullDirPath + '/index.js') || path.existsSync(fullDirPath + '/index.node')){
-			augmentAuthWithStrategy(filename, '/strategies'); //include the folder as a module
+			augmentWithStrategy(filename, '/strategies'); //include the folder as a module
 		} else {
 			console.log('Could not include file: ' + fullDirPath);
 		}
 	} else {
-		augmentAuthWithStrategy(filename, '/strategies'); //if a file just include the file
+		augmentWithStrategy(filename, '/strategies'); //if a file just include the file
 	}
 });
