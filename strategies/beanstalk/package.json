@@ -2,7 +2,7 @@
 	"name": "job-beanstalk",
 	"version": "0.0.1",
 	"main": "./lib/beanstalk.js",
-	"description": "Beanstalk plugin for job",
+	"description": "Beanstalkd based strategy",
 	"engines": {
 		"node": "*"
 	},

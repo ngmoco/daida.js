@@ -2,7 +2,7 @@
 	"name": "local",
 	"version": "0.0.1",
 	"main": "./lib/local.js",
-	"description": "Simple scheduler",
+	"description": "Local event loop based strategy",
 	"engines": {
 		"node": "*"
 	},
