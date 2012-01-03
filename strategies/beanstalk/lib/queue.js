@@ -1,16 +1,15 @@
-var util = require('util');
-var BeanstalkClient = require('beanstalk_client').Client;
-
 /**
- * Client Constructor
- * Receives server configuration object
- *
+ * The Queue object
+ * @param {config} The beanstalk server configuration object:
  * {
  *     host: 'localhost'
  *   , port: 11300
  *   , queueName: 'test'
  * }
  */
+
+var util = require('util');
+var BeanstalkClient = require('beanstalk_client').Client;
 
 var Queue = function(){
 
@@ -53,7 +52,7 @@ Queue.prototype = {
         delay = 0;
 
     var data = taskObj.args;
-    var type = taskObj.handlerNamespace + '.' + taskObj.handlerFunction;
+    var type = taskObj.handlerModule + '.' + taskObj.handlerFunction;
     var job_data = {'type': type, 'data': data}; //this is the message format that node_beanstalk_worker likes.
 
     BeanstalkClient.connect(this.host+':'+this.port, function(error, connection){

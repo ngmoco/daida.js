@@ -1,16 +1,7 @@
 /**
- * JobHandler
- * @param taskObj. data schema is described below.
- *
- * taskObj Data Schema
- * taskObj = {
- *  runAt: "2011/11/10 09:00:00" // datetime, any string can be recognized as an argument of Date()
- *  task: samplefunc // functionName
- *  argumentObj: {str: "test", person: "Bob"} // anything you want to set
- *  max_attempts: 10 // retry
- *
- * };
- */
+ * The Job object
+ * This is just a glorified task. It allows for some abstraction.
+*/
 var Job = function Job(task) {
 	this._id = 0;
 	this._task = task;
@@ -49,12 +40,12 @@ Job.prototype = {
 		//so that when the task is finished async or not it will pass controll
 		//back to worker for post task cleanup
 		var runnable = function(){ /* noOp */ };
-		if(this.task){
+		if(this.taskFunction){
 			//the runnable was already on the task.
-			runnable = this.task;
+			runnable = this.taskFunction;
 		}
 		else {
-			runnable = require('../../../handlers/'+this.handlerNamespace.toLowerCase())[this.handlerFunction];
+			runnable = require('../../../handlers/'+this.handlerModule.toLowerCase())[this.handlerFunction];
 		}
 
 		if(runnable instanceof Array){

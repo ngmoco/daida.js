@@ -1,3 +1,7 @@
+/**
+ * The Supervisor object
+ */
+
 var Worker = require('./worker').Worker;
 
 var Supervisor = function Supervisor(){

@@ -1,8 +1,10 @@
-var Job = require('./job').Job;
-
 /**
  * The Queue object
+ * This is the in memory task store.
  */
+
+var Job = require('./job').Job;
+
 var Queue = function localQueue(existingQueueArray){
 	this._queue = [];
 	if(existingQueueArray instanceof Array){

@@ -1,8 +1,10 @@
+/**
+ * The Worker object
+ * @param {options} The beanstalkd server config and handlers
+ */
+
 var BeanstalkWorker = require('beanstalk_worker').BeanstalkWorker;
 
-/**
- * Worker Process constructor
- */
 var Worker = function() {
     /* options = {
      *  server: '127.0.0.1:11300',
@@ -19,17 +21,25 @@ var Worker = function() {
 
     this.handlers = [];
     for(var i=0; i< this.options.handlers.length; i++) {
-        var currentHandlerNamespace = require(this.options.handlers[i]);
-		var namespaceName = currentHandlerNamespace.handlerNamespace;
-		var handlersWithNSPrefix = [];
-		for( var key in currentHandlerNamespace.handlers ) {
-			if( currentHandlerNamespace.hasOwnProperty(key)) {
-				var handlerNameWithNSPrefix = namespaceName + '.' + key;
-				console.log(handlerNameWithNSPrefix);
-				handlersWithNSPrefix[handlerNameWithNSPrefix] = currentHandlerNamespace.handlers[key];
+		var modulePath = this.options.handlers[i];
+		var moduleName = modulePath;
+		if(modulePath.indexOf('/') >= 0) {
+			var modulePathParts = modulePath.split('/');
+			moduleName = modulePathParts[modulePathParts.length-1];
+		}
+
+        var currentHandlerModule = require(modulePath);
+
+		var currentHandlerModuleName = moduleName.charAt(0).toUpperCase() + moduleName.substr(1).toLowerCase();
+
+		var handlersWithModulePrefix = [];
+		for( var key in currentHandlerModule.handlers ) {
+			if( currentHandlerModule.hasOwnProperty(key)) {
+				var handlerNameWithModulePrefix = currentHandlerModuleName + '.' + key;
+				handlersWithModulePrefix[handlerNameWithModulePrefix] = currentHandlerModule.handlers[key];
 			}
 		}
-		this.handlers.push(handlersWithNSPrefix); //require from filesystem and put in registry
+		this.handlers.push(handlersWithModulePrefix); //require from filesystem and put in registry
     }
 
 	//TODO: put the following scalar into a configuration file

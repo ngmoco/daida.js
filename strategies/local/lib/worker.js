@@ -1,5 +1,5 @@
 /**
- * The Worker Object
+ * The Worker object
  * this is just a glorified job. It allows us the abstraction.
  */
 
