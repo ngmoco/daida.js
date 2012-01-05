@@ -18,8 +18,8 @@ var Supervisor = function Supervisor(buffered, max_workers_in_buffer, max_worker
 	this._numWorkers = 0;//handle the possibility of sparse arrays
 	this._numWorkersWorking = 0;
 	this._runnable = false;
-	this._buffered = buffered || false;
-	this.MAX_WORKERS_IN_BUFFER = max_workers_in_buffer || 2; //some arbitrary number for now. 0 = unlimited. TODO: make this a configuration variable
+	this._buffered = buffered || false; //turns on the worker buffering.
+	this.MAX_WORKERS_IN_BUFFER = max_workers_in_buffer || 0; //some arbitrary number for now. 0 = unlimited. TODO: make this a configuration variable
 	this.MAX_WORKERS_WORKING = max_workers_working || 0; //the maximum number of concurrent WORKING workers (not just waiting for timer to fire). 0 indicates unlimited.
 	this.MAX_WORKER_RETRIES = max_worker_retries || 1; //the maximum number of time to retry a worker working (if numWorkersWorking > MAX_WORKERS_WORKING a worker get's retried)
 	this.DELAY_IN_SECS_FOR_RETRY = delay_in_secs_for_retry || 1; //the number of seconds to wait before retrying a workers work.
