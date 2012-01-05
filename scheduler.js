@@ -26,7 +26,9 @@ Scheduler.prototype = {
             for(key in jobs){
 				var job = jobs[key];
 				if(this._supervisor){
-					this._supervisor.addJob(job,
+					this._supervisor.supervise(
+						job,
+						this.preRunCallback.bind(this),
 						this.postRunCallback.bind(this),
 						this.errorCallback.bind(this)
 					);
@@ -35,7 +37,9 @@ Scheduler.prototype = {
 		} else {
 			var job = this._jobqueue.queue(task);
 			if(this._supervisor){
-				this._supervisor.addJob(job,
+				this._supervisor.supervise(
+					job,
+					this.preRunCallback.bind(this),
 					this.postRunCallback.bind(this),
 					this.errorCallback.bind(this)
 				);
@@ -44,12 +48,18 @@ Scheduler.prototype = {
 	},
 
 	errorCallback: function(error, job){
-		console.error('There was an error with the job. Error was: ' + error);
+		//console.error('There was an error with the job. Error was: ' + error);
 		this.queueError(job);
 	},
 
-	postRunCallback: function(job){
+	preRunCallback: function(job){
+		//TODO decide if we want to dequeue on
+		// the job being started or when it's finished.
 		this.dequeueJob(job);
+	},
+
+	postRunCallback: function(job){
+		//console.log('The job was finished');
 	},
 
 	queueError: function(job){
