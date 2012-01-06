@@ -13,7 +13,8 @@
 
 var Worker = require('./worker').Worker;
 
-var Supervisor = function Supervisor(buffered, max_workers_in_buffer, max_workers_working, max_worker_retries, delay_in_secs_for_retry){
+var Supervisor = function Supervisor(handler_registry_path, buffered, max_workers_in_buffer, max_workers_working, max_worker_retries, delay_in_secs_for_retry){
+	this._handlerRegistryPath = handler_registry_path || '../../../handlers'; //defaults to the handlers folder in the module top level dir.
 	this._workers = [];
 	this._numWorkers = 0;//handle the possibility of sparse arrays
 	this._numWorkersWorking = 0;
@@ -27,6 +28,37 @@ var Supervisor = function Supervisor(buffered, max_workers_in_buffer, max_worker
 
 Supervisor.prototype = {
 		supervise: function(job, pre_run_cb, post_run_cb, error_cb) {
+		//We star by checking if the job's handler is actually
+		//runnable. This avoids queuing jobs that won't work.
+
+		//TODO we need to enforce that all tasks accept the call back of
+		//workers "post run function" in the taskFunc call below
+		//so that when the task is finished async or not it will pass controll
+		//back to worker for post task cleanup
+		var runnable;
+		if(job.taskFunction){
+			//the runnable was already on the task.
+			runnable = job.taskFunction;
+		}
+		else {
+			//insure trailling slash so that concatenation below works correctly.
+			if('/' !== this._handlerRegistryPath.slice(this._handlerRegistryPath.length-1,this._handlerRegistryPath.length)){
+					this._handlerRegistryPath += '/';
+			}
+
+			try {
+				runnable = require(this._handlerRegistryPath+job.handlerModule.toLowerCase())[job.handlerFunction];
+			} catch(e) {
+				//noOp
+			}
+		}
+		//if we still don't have a runnable handler function let's gtfo
+		if(!runnable) {
+			error_cb('Invalid handler function', job);
+			return;
+		}
+		job.setRunnable(runnable);
+
 		if(this._buffered){
 			if(this.MAX_WORKERS_IN_BUFFER > 0 && this._numWorkers >= this.MAX_WORKERS_IN_BUFFER) {
 				error_cb('Job buffer full. Please try again later.', job);

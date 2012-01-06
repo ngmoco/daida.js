@@ -3,13 +3,9 @@
  */
 
 // Scheduler constructor
-var Scheduler = function Scheduler(supervisor, queue){
-	//we expect that sometimes we will only receive a queue
-	//this is dependent on the strategy being used
-	if(!queue){
-		queue = supervisor;
-		supervisor = null;
-	}
+var Scheduler = function Scheduler(queue, supervisor, logger){
+
+	this._logger = logger || console; //default to console if logger is not give
 
 	// task queue
 	this._jobqueue = queue; //here we dependency inject constructor style
@@ -48,17 +44,19 @@ Scheduler.prototype = {
 	},
 
 	errorCallback: function(error, job){
-		//console.error('There was an error with the job. Error was: ' + error);
+		this._logger.error('There was an error with the job. Error was: ' + error);
 		this.queueError(job);
 	},
 
 	preRunCallback: function(job){
+		this._logger.info('Job checking in for preRunCallback');
 		//TODO decide if we want to dequeue on
 		// the job being started or when it's finished.
 		this.dequeueJob(job);
 	},
 
 	postRunCallback: function(job){
+		this._logger.info('Job finished.');
 		//console.log('The job was finished');
 	},
 

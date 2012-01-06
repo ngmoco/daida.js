@@ -6,6 +6,7 @@ var Job = function Job(task) {
 	this._id = 0;
 	this._task = task;
 	this.setState(this.STATES.NEW);
+	this._runnable = function(){ /* noOp */ }; // This will remain noOp until a supervisor assigns it to a workeu
 
 	//now consume all the fields from the task:
 	for(key in task){
@@ -25,12 +26,28 @@ Job.prototype = {
 		'FAILED': 6,
 	},
 
-	setId: function(job_id){
-		this._id = job_id;
+	setId: function(id){
+		this._id = id;
+	},
+
+	getId: function(){
+		return this._id;
 	},
 
 	setState: function(state){
-		this._status = state;
+		this._state = state;
+	},
+
+	getState: function(){
+		return this._state;
+	},
+
+	setRunnable: function(runnable){
+		this._runnable = runnable;
+	},
+
+	getRunnable: function(){
+		return this._runnable;
 	},
 
 	run: function(callback){

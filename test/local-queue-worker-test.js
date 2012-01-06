@@ -6,9 +6,9 @@ var localQueue = new LocalQueue();
 
 //If you want to buffer the workers so that they don't start their timers immediately.
 var bufferedSupervisorWorkQueue = false;
-
-var supervisor = new Supervisor(bufferedSupervisorWorkQueue);
-var scheduler = new Scheduler(supervisor, localQueue); //pass in queue strategy via constructor style DI.
+var pathToJobHandlerRegistry = require('fs').realpathSync('../handlers');
+var supervisor = new Supervisor(pathToJobHandlerRegistry, bufferedSupervisorWorkQueue);
+var scheduler = new Scheduler(localQueue, supervisor, null); //pass in queue strategy via constructor style DI.
 
 // If you are using a buffered supervisor work queue you will need
 // to run the supervisor.start() method.
