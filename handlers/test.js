@@ -6,23 +6,25 @@
  * task is finished. If no callback is passed you can simply
  * call a noOp function defined in the fashion found below.
  */
+var inject = exports.inject = function(context){
+	var handlers = {
+	  bar: function(data, cb) {
+	    var callback = cb || function() { /* noOp */ };
+	    console.log('bar job passed data: ' + JSON.stringify(data));
+	    callback();
+	  },
 
-var handlers = {
+	  foo: function(data, cb) {
+		var callback = cb || function() { /* noOp */ };
+	    var log = context.set('log4js').getLogger('Handler Test.foo');
+	    log.info('foo job passed data.name: '+ data.name);
+	    callback();
+	  },
+	};
 
-  bar: function(data, cb) {
-    var callback = cb || function() { /* noOp */ };
-    console.log('test job passed data: ' + JSON.stringify(data));
-    callback();
-  },
-
-  foo: function(data, cb) {
-    var callback = cb || function() { /* noOp */ };
-    console.log('foo job passed name'+ data.name);
-    callback();
-  },
-
+	return {handlers: handlers};
 };
+var handlers = inject().handlers;
 exports.handlers = handlers;
-
 exports.bar = handlers.bar;
 exports.foo = handlers.foo;

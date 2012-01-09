@@ -44,20 +44,19 @@ Scheduler.prototype = {
 	},
 
 	errorCallback: function(error, job){
-		this._logger.error('There was an error with the job. Error was: ' + error);
+		this._logger.error('Job: ' + job._id + ' had an error. Error was: ' + error);
 		this.queueError(job);
 	},
 
 	preRunCallback: function(job){
-		this._logger.info('Job checking in for preRunCallback');
+		this._logger.info('Job: ' + job._id + '  checking in for preRunCallback');
 		//TODO decide if we want to dequeue on
 		// the job being started or when it's finished.
 		this.dequeueJob(job);
 	},
 
 	postRunCallback: function(job){
-		this._logger.info('Job finished.');
-		//console.log('The job was finished');
+		this._logger.info('Job: ' + job._id + ' finished.');
 	},
 
 	queueError: function(job){

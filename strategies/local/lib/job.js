@@ -52,21 +52,9 @@ Job.prototype = {
 
 	run: function(callback){
 		this.setState(this.STATES.RUNNING);
-		//TODO we need to enforce that all tasks accept the call back of
-		//workers "post run function" in the taskFunc call below
-		//so that when the task is finished async or not it will pass controll
-		//back to worker for post task cleanup
-		var runnable = function(){ /* noOp */ };
-		if(this.taskFunction){
-			//the runnable was already on the task.
-			runnable = this.taskFunction;
-		}
-		else {
-			runnable = require('../../../handlers/'+this.handlerModule.toLowerCase())[this.handlerFunction];
-		}
 
-		if(runnable instanceof Array){
-			var accumulator = runnable.length-1;
+		if(this._runnable instanceof Array){
+			var accumulator = this._runnable.length-1;
 			var cbWhenAllFinished = function(){
 				if(accumulator === 0){
 					callback();
@@ -75,13 +63,13 @@ Job.prototype = {
 				accumulator--;
 			};
 
-			for(key in runnable){
-				var run = runnable[key];
+			for(key in this._runnable){
+				var run = this._runnable[key];
 				run.call(this, this.args, cbWhenAllFinished); // this is where the action happens might not be called task check the task objects format
 
 			}
 		} else {
-			runnable.call(this, this.args, callback); // this is where the action happens might not be called task check the task objects format
+			this._runnable.call(this, this.args, callback); // this is where the action happens might not be called task check the task objects format
 		}
 	},
 };

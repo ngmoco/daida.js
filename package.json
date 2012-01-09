@@ -4,7 +4,10 @@
 	"main": "index",
 	"description": "Multi-strategy task scheduler library.",
 	"engines": {
-		"node": "*"
+		"node": ">=0.6.0"
+	},
+	"dependencies" : { 
+		"log4js": "latest"
 	},
 	"keywords": ["job", "scheduler", "worker", "delayed", "task"]
 }

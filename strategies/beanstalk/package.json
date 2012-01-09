@@ -6,9 +6,9 @@
 	"engines": {
 		"node": "*"
 	},
-		"dependencies" : { 
+	"dependencies" : { 
 		"beanstalk_client": "*",
 		"beanstalk_worker": "*"
-  },
+	},
 	"keywords": ["job", "scheduler", "beanstalk"]
 }
