@@ -54,20 +54,31 @@ Job.prototype = {
 		this.setState(this.STATES.RUNNING);
 
 		if(this._runnable instanceof Array){
-			var accumulator = this._runnable.length-1;
-			var cbWhenAllFinished = function(){
-				if(accumulator === 0){
-					callback();
+			var accumulator = 0;
+			var cbWhenAllFinished = function(error){
+				if(error){
+					//if we have an error thrown by one of he handler functions
+					//we should return immediately. we can't know if it will
+					//effect the rest of them. So we effectively cancel all.
+					//the following will set the state of this job to FAILED
+					//and call the workers error callback with the message
+					callback(error, null);
+					return;
 				}
 
-				accumulator--;
+				if(accumulator >= this._runnable.length){
+					callback();
+				}
+				accumulator++;
+
+				var nextRunnable = this._runnable[accumulator];
+				if('function' === typeof nextRunnable){
+					var run = nextRunnable;
+					run.call(this, this.args, cbWhenAllFinished); // this is where the action happens might not be called task check the task objects format
+
+				}
 			};
 
-			for(key in this._runnable){
-				var run = this._runnable[key];
-				run.call(this, this.args, cbWhenAllFinished); // this is where the action happens might not be called task check the task objects format
-
-			}
 		} else {
 			this._runnable.call(this, this.args, callback); // this is where the action happens might not be called task check the task objects format
 		}
