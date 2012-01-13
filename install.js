@@ -7,6 +7,6 @@ process.stdout.write("=                                                         
 process.stdout.write("================================================================================\n");
 
 //Symlink default strategies
-process.stdout.write(JSON.stringify(npm_package_dependencies));
+process.stdout.write(JSON.stringify(process.env.npm_package_dependencies));
 fs.symlinkSync('../node_modules/daida-local', './strategies/local', 'dir');
 fs.symlinkSync('../node_modules/daida-beanstalk', './strategies/beanstalk', 'dir');
