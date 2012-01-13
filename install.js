@@ -2,11 +2,24 @@ var fs = require('fs');
 
 process.stdout.write("================================================================================\n");
 process.stdout.write("=                                                                              =\n");
-process.stdout.write("=               Daida.js Creating symlinks for default strategies              =\n");
+process.stdout.write("=                     Daida.js installing default strategies                   =\n");
 process.stdout.write("=                                                                              =\n");
 process.stdout.write("================================================================================\n");
 
 //Symlink default strategies
-process.stdout.write('dependencies looked like: '+require('util').inspect(process.env.npm_package_dependencies_daida_beanstalk)+'\n');
-fs.symlinkSync('../node_modules/daida-local', './strategies/local', 'dir');
-fs.symlinkSync('../node_modules/daida-beanstalk', './strategies/beanstalk', 'dir');
+var npm_pkg_conf_env_var_prefix = 'npm_package_config'; //see: http://npmjs.org/doc/json.html#config
+var modules_path_rel_to_strategies = '../node_modules';
+var strategies_path_rel_to_this_script = './strategies';
+
+//ahh what I would give for list comprehensions here
+for(var key in process.env){
+	//we are looking for keys that look like
+	//npm_package_config_strategies_local
+	if(key.indexOf(npm_pkg_conf_env_var_prefix+'_strategies_') >= 0){
+		var strategy_name = key.replace(npm_pkg_conf_env_var_prefix+'_strategies_', '');
+		var strategy_module_name = process.env[key];
+		fs.symlinkSync(modules_path_rel_to_strategies+'/'+strategy_module_name, strategies_path_rel_to_this_script+'/'+strategy_name, 'dir');
+		process.stdout.write("Installed the "+strategy_name+" strategy.")
+	}
+}
+process.stdout.write("Daida.js install finished.")

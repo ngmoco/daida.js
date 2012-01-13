@@ -11,6 +11,12 @@
 		"daida-local": "git://github.com/ngmoco/daida-local.git",
 		"log4js": "latest"
 	},
+	"config": {
+		"strategies": {
+			"local": "daida-local",
+			"beanstalk": "daida-beanstalk"
+		}
+	},
 	"scripts": {
 		"install": "node install.js"
 	},
