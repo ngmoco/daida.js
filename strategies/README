@@ -1,0 +1,15 @@
+This is where you should put your persistence and worker strategies.
+They will be made available as fields on the top level daida module.
+
+They should be modules themselves following the "folders as modules"
+idiom in the node.js fashion. 
+
+The folders they are contained in should have the same name as the 
+module they contain preferably all lower cased. The module name 
+should be CamelCased however.
+
+You can symlink modules into this folder if you install them via
+npm. The default modules are done this way.
+
+More info about node.js "folders as modules"" style available here:
+http://nodejs.org/docs/v0.6.7/api/modules.html#folders_as_Modules
