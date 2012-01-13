@@ -1,4 +1,5 @@
-# NGCore-Server-Scheduler
+# Daida.js 
+===========
 
 This is the scheduler library for the NGCore-Server application. This scheduler library contains the following primary components.
 
@@ -24,7 +25,16 @@ Worker (an object that implements at least the work() method which starts listen
 
 The local strategy is somewhat special as it combines both queue and worker modules into the same running process however for the purposes of clarity and reusability we continue to seperate the code for the two objects into seperate modules. It should be noted that even though the local stratagy executes within the same thread it is infact fully asynchronous as it uses process.nextTick to refrain from blocking any parallel execution while the timer is running. For more information about the afformentioned async processing see the Supervisor module within the local strategy.
 
+## Install
+===========
+git clone this repo.
+npm install from within the working copy for this repo to install the known strategies.
+If you have custom strategies put them into the strategies folder. Any strategy in the strategies folder should export a module as a folder (in the node.js fashion) that has the same name as the folder it is contained in but CamelCased.
+
+
+
 ## Usage
+=========
 
 ### Queueing
 
@@ -135,6 +145,7 @@ The local strategy has the additional capability of allowing runtime task functi
 Finally it should be noted that in order to have your code exit cleanly you will need to kill off the supervisor object which otherwise will indefinitely listen for new work. Notice the above setTimeout to kill the supervisor after 10 seconds of work. The call to supervisor.stop(); will tell the supervisor to cleanly shutdown on it's next trip around the event loop.
 
 ## Working
+===========
 
 All strategies have worker objects that can use the common handler objects to take action on tasks when their time has come. BUT each strategy implements it's workers differently. This is because the persistence of the tasks is fundamentally different depending on the strategy. However the strategies can again be seperated into local and non-local strategies. The local strategy has the benefit of being able to access the memory space of the code that originaly queued the tasks to be executed BUT it is not advisable to rely upon it. You will end up with very strange race conditions and un-portable code (moving to non-local strategies won't work.)
 
@@ -180,6 +191,7 @@ Nothing needs to be done! The local strategy automatically handles the workers a
 ```
 
 ## Handlers
+============
 
 Handlers are the common objects that contain the methods that are invoked by workers as determined by the task definitions. The methods are static and have a common method signature which allows them to take in an arguments object and a callback. When executed they run their pre-defined code with only the context passed via the arguments. It is possible for the handlers to contain code that modifies external resources such as databases / filesystems but great care should be taken especially when using the non-local strategies to insure that the external resources will be available at the location of the worker process which will be running the handler method. Think about the situation where their is seperate physical hardware between the code that queues a task and the code that executes the task's handler function. In general itis advisable to avoid mutating external resources and furthermore to try to make tasks idempotent. Of course this is not always possible.
 
@@ -205,11 +217,13 @@ Handlers are the common objects that contain the methods that are invoked by wor
 	exports.foo = handlers.foo;
 
 ## Authors
+===========
 
 Yusuke Shinozaki (yshinozaki - shinozaki.yusuke@dena.jp)
 Jesse Sanford (jsanford - jsanford@ngmoco.com)
 
 ## License
+===========
 
 Copyright (c) 2011, 2011 ngmoco LLC -- ngmoco:)
 
