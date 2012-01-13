@@ -12,7 +12,7 @@
 		"log4js": "latest"
 	},
 	"scripts": {
-		"install": "install.js"
+		"install": "node install.js"
 	},
 	"keywords": ["job", "scheduler", "worker", "delayed", "task"]
 }
