@@ -1,7 +1,9 @@
 # Daida.js 
 ===========
 
-This is the scheduler library for the NGCore-Server application. This scheduler library contains the following primary components.
+This is the scheduler library for the NGCore-Server application. However it is a very general work queue/scheduler library that can be used on it's own. It only requires node.js and a few js modules. 
+
+This scheduler library contains the following primary components.
 
 * The Scheduler: The broker object for all of the scheduling strategies. Accepts tasks via it's schedule() method and depending on it's context (dependency injected strategy etc) it composes a Job object representing the task and schedules it in the particular strategies queue.
 * Scheduling strategies: See below.
