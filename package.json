@@ -6,11 +6,13 @@
 	"engines": {
 		"node": ">=0.6.0"
 	},
-	"dependencies" : {
+	"dependencies": {
 		"daida-beanstalk": "git://github.com/ngmoco/daida-beanstalk.git",
 		"daida-local": "git://github.com/ngmoco/daida-local.git",
 		"log4js": "latest"
 	},
-	"install": "install.js",
+	"scripts": {
+		"install": "install.js"
+	},
 	"keywords": ["job", "scheduler", "worker", "delayed", "task"]
 }
