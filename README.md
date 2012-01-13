@@ -13,14 +13,20 @@ Jobs: A wrapper around the task with context (strategy) specific extras.
 
 Task Handlers: The pre-defined objects that contain the static functions to be used to execute the tasks. These are not required as tasks can have their handler functions defined directly on themselves. However a library of task handlers can be pre-defined and then used on seperate physical machines that host only workers who have no references back to the code that original scheduled the task.
 
+
 The scheduling strategies are the individual implementations of persisting and executing the tasks at their scheduled time. The strategies differ in their approaches to things like complexity, durrability and availability but all of them adhere to the same interface/protocol for queueing new tasks. Additionally all of the strategies accept the same task format. In this fashion strategies can be interchanged to meet changing complexity/durrability/availability requirements. Currently there are three strategies:
 
 Local (tasks are persisted in memory and executed within the same node process as the code that originally scheduled the task)
+
 RabbitMQ (tasks are persisted on a seperate RabbitMQ server until picked up by a matching nodejs worker process which will start a timer and wait to execute the task at the scheduled time)
+
 Beanstalk (tasks are persisted on a separate Beanstalkd server and remain in the queue until their scheduled time at which point a matching nodejs worker process is notified that the task is ready to be executed)
 
+
 As well all scheduling strategies contain AT LEAST the following modules:
+
 Queue (an object that implments at least the queue() method which accepts new tasks)
+
 Worker (an object that implements at least the work() method which starts listening for executable tasks)
 
 The local strategy is somewhat special as it combines both queue and worker modules into the same running process however for the purposes of clarity and reusability we continue to seperate the code for the two objects into seperate modules. It should be noted that even though the local stratagy executes within the same thread it is infact fully asynchronous as it uses process.nextTick to refrain from blocking any parallel execution while the timer is running. For more information about the afformentioned async processing see the Supervisor module within the local strategy.
@@ -223,6 +229,7 @@ Handlers are the common objects that contain the methods that are invoked by wor
 ===========
 
 Yusuke Shinozaki (yshinozaki - shinozaki.yusuke@dena.jp)
+
 Jesse Sanford (jsanford - jsanford@ngmoco.com)
 
 ## License
