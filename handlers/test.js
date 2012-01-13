@@ -16,8 +16,7 @@ var inject = exports.inject = function(context){
 
 	  foo: function(data, cb) {
 		var callback = cb || function() { /* noOp */ };
-	    var log = context.set('log4js').getLogger('Handler Test.foo');
-	    log.info('foo job passed data.name: '+ data.name);
+	    console.log('foo job passed data.name: '+ data.name);
 	    callback();
 	  },
 	};

@@ -3,13 +3,16 @@
 	"version": "0.0.1",
 	"main": "index",
 	"description": "Multi-strategy task scheduler library.",
+	"author": "Jesse Sanford <jsanford@ngmoco.com>",
+	"contributors": [
+		"Yusuke Shinozaki <shinozaki.yusuke@dena.jp>"
+	],
 	"engines": {
 		"node": ">=0.6.0"
 	},
 	"dependencies": {
 		"daida-beanstalk": "git://github.com/ngmoco/daida-beanstalk.git",
-		"daida-local": "git://github.com/ngmoco/daida-local.git",
-		"log4js": "latest"
+		"daida-local": "git://github.com/ngmoco/daida-local.git"
 	},
 	"config": {
 		"strategies": {
