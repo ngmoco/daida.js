@@ -28,7 +28,9 @@ The local strategy is somewhat special as it combines both queue and worker modu
 ## Install
 ===========
 git clone this repo.
+
 npm install from within the working copy for this repo to install the known strategies.
+
 If you have custom strategies put them into the strategies folder. Any strategy in the strategies folder should export a module as a folder (in the node.js fashion) that has the same name as the folder it is contained in but CamelCased.
 
 
@@ -215,6 +217,7 @@ Handlers are the common objects that contain the methods that are invoked by wor
 
 	exports.bar = handlers.bar;
 	exports.foo = handlers.foo;
+```
 
 ## Authors
 ===========
