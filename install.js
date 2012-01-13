@@ -19,7 +19,7 @@ for(var key in process.env){
 		var strategy_name = key.replace(npm_pkg_conf_env_var_prefix+'_strategies_', '');
 		var strategy_module_name = process.env[key];
 		fs.symlinkSync(modules_path_rel_to_strategies+'/'+strategy_module_name, strategies_path_rel_to_this_script+'/'+strategy_name, 'dir');
-		process.stdout.write("Installed the "+strategy_name+" strategy.")
+		process.stdout.write("Daida.js Install: Symlinked the "+strategy_name+" strategy.\n")
 	}
 }
-process.stdout.write("Daida.js install finished.")
+process.stdout.write("Daida.js Install: Finished.\n")
