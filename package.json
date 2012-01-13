@@ -11,5 +11,6 @@
 		"daida-local": "git://github.com/ngmoco/daida-local.git",
 		"log4js": "latest"
 	},
+	"install": "install.js",
 	"keywords": ["job", "scheduler", "worker", "delayed", "task"]
 }
