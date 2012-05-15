@@ -1,30 +1,27 @@
 # Daida.js 
 ===========
 
-This is the scheduler library for the NGCore-Server application. However it is a very general work queue/scheduler library that can be used on it's own. It only requires node.js and a few js modules. 
+Daida is a scheduler module for use with Beanstalk or by itself. The only requirement is node.js.
 
-This scheduler library contains the following primary components.
+Daida has the following components:
 
-* The Scheduler: The broker object for all of the scheduling strategies. Accepts tasks via it's schedule() method and depending on it's context (dependency injected strategy etc) it composes a Job object representing the task and schedules it in the particular strategies queue.
+* Scheduler: A broker for the scheduling strategies. Accepts tasks via its schedule() method and, depending on its context (dependency injected strategy, etc.), composes a Job object representing the task and schedules it in a strategies queue.
 * Scheduling strategies: See below.
-* Tasks: The object litterals representing the work to be done and when.
-* Jobs: A wrapper around the task with context (strategy) specific extras.
-* Task Handlers: The pre-defined objects that contain the static functions to be used to execute the tasks. These are not required as tasks can have their handler functions defined directly on themselves. However a library of task handlers can be pre-defined and then used on seperate physical machines that host only workers who have no references back to the code that original scheduled the task.
+* Tasks: Object litterals representing the work to be done and when.
+* Jobs: Wrappers around tasks with context (strategy) specific extras.
+* Task Handlers: Pre-defined objects containing static functions to execute tasks. Handlers are not required; tasks can have their handler functions defined directly on themselves. A library of task handlers can be pre-defined and used on seperate machines that host-only workers who have no references back to the code that originally scheduled the task.
 
-
-The scheduling strategies are the individual implementations of persisting and executing the tasks at their scheduled time. The strategies differ in their approaches to things like complexity, durrability and availability but all of them adhere to the same interface/protocol for queueing new tasks. Additionally all of the strategies accept the same task format. In this fashion strategies can be interchanged to meet changing complexity/durrability/availability requirements. Currently there are three strategies:
+Scheduling strategies are implementations of persisting and executing tasks at scheduled times. Strategies differ in approaches to complexity, durrability and availability. However, all adhere to the same interface/protocol for queueing tasks. Additionally, all strategies accept the same task format. Thus, strategies are interchangable to meet changing complexity/durrability/availability requirements. Currently, there are 2 strategies:
 
 * Local (tasks are persisted in memory and executed within the same node process as the code that originally scheduled the task)
-* RabbitMQ (tasks are persisted on a seperate RabbitMQ server until picked up by a matching nodejs worker process which will start a timer and wait to execute the task at the scheduled time)
 * Beanstalk (tasks are persisted on a separate Beanstalkd server and remain in the queue until their scheduled time at which point a matching nodejs worker process is notified that the task is ready to be executed)
 
+Also, all scheduling strategies contain AT LEAST the following modules:
 
-As well all scheduling strategies contain AT LEAST the following modules:
+* Queue - An object implmenting at least the queue() method, which accepts new tasks.
+* Worker - An object implementing at least the work() method, which starts listening for executable tasks.
 
-* Queue (an object that implments at least the queue() method which accepts new tasks)
-* Worker (an object that implements at least the work() method which starts listening for executable tasks)
-
-The local strategy is somewhat special as it combines both queue and worker modules into the same running process however for the purposes of clarity and reusability we continue to seperate the code for the two objects into seperate modules. It should be noted that even though the local stratagy executes within the same thread it is infact fully asynchronous as it uses process.nextTick to refrain from blocking any parallel execution while the timer is running. For more information about the afformentioned async processing see the Supervisor module within the local strategy.
+The local strategy is special; it combines both queue and worker modules into the same process. However, for clarity and reusability, we seperate the code for the 2 objects into different modules. Even though the local stratagy executes within the same thread as the scheduler, it is asynchronous by using process.nextTick to avoid blocking any other events while the timer is running. For more information about the async processing, see the Supervisor module within the local strategy.
 
 ## Install
 ===========
@@ -32,15 +29,16 @@ The local strategy is somewhat special as it combines both queue and worker modu
 
 2. `npm install` from within the working copy to install the known strategies.
 
-NOTE: If you have custom strategies put them into the strategies folder. Any strategy in the strategies folder should export a 'folder as a module' (in the node.js fashion) that has the same name as the folder it is contained in but CamelCased. It is preferable if the folder name is lower case however. For more information about node 'folders as modules' see: [http://nodejs.org/docs/v0.6.7/api/modules.html#folders](http://nodejs.org/docs/v0.6.7/api/modules.html#folders_as_Modules)
+NOTE: If you have custom strategies put them into the strategies folder. Any strategy in the strategies folder should export a 'folder as a module' (in the node.js fashion) that has the same name as the folder in which it is contained, but CamelCased. It is preferable if the folder name is lower case, however. For more information about node 'folders as modules' see: [http://nodejs.org/docs/v0.6.7/api/modules.html#folders](http://nodejs.org/docs/v0.6.7/api/modules.html#folders_as_Modules)
 
+Or, you can install this module via npm, using "npm install daida".
 
 ## Usage
 =========
 
 ### Queueing
 
-We seperate the begining of the example into local and non-local versions because of the difference in the instantion of the scheduler below. This is because the local strategy has the additional dependency on the supervisor object. We converge and finish the example with the common code for creating and scheduling tasks.
+We seperate the begining of the example into local and non-local versions because of the difference in the instantion of the scheduler below. This is because the local strategy has a dependency on the supervisor object. Later, we converge and finish the example with the common code for creating and scheduling tasks.
 
 #### Non-Local Strategies
 
@@ -70,7 +68,7 @@ We seperate the begining of the example into local and non-local versions becaus
 
 	var bufferedSupervisorWorkQueue = false; //This will tell the supervisor to start job timers immediately. Defaults to false;
 	var pathToJobHandlerRegistry = require('fs').realpathSync('../handlers'); //This is the abs path to the handlers folder
-	var supervisor = new Supervisor(pathToJobHandlerRegistry, bufferedSupervisorWorkQueue); //The supervisor will start it's nextTick callback loop waiting for work once you call start()
+	var supervisor = new Supervisor(pathToJobHandlerRegistry, bufferedSupervisorWorkQueue); //The supervisor will start its nextTick callback loop waiting for work once you call start()
 
 	var scheduler = new Scheduler(localQueue, supervisor, null); //Pass in the supervisor and also the queue strategy via constructor style DI.
 
@@ -78,17 +76,16 @@ We seperate the begining of the example into local and non-local versions becaus
 
 #### Local Strategy (Buffered)
 
-The local strategy has the additional functionality of being able to buffer the jobs in it's supervisor without starting
-their timers. This can be a benefit and a drawback. The benefit is that you have more fine grained control of when your
-system will start processing jobs. This can be handy in the local strategy since jobs are really running in the same thread
-as the application queuing them they can still saturate your node process defeating the purpose of deffering them in the
-first place. So you can decide to allow your application to queue as normal but only process the queued jobs when you have
-a surplus of system resources. How this may be done is left up to you but it is possible to programatically start and stop
-the supervisor at your whim. A caveat to this is that you may have jobs whose task definition contains an absolute "runAt"
-timestamp therefore may expire while the supervisor is "sleeping". When you finally decide to start the supervisor it is 
-likely that they will instantly fail due to timer expiration. You can mitigate this by using relative "runAfter" task
-definitions. Another caveat is that while a buffered supervisor is started and "running" it will poll the buffer for new
-jobs. This polling is fast and uses a very small process.nextTick loop to check for new jobs but it does cause single
+The local strategy has the ability to buffer jobs in its supervisor without starting their timers. The benefit is you have more fine-grained control of when your
+system will start processing jobs. This is handy in the local strategy since jobs are running in the same thread
+as the application queuing them. Executing tasks can saturate your node process, defeating the purpose of deferring them in the
+first place. You can allow your application to queue as normal, but only process queued jobs when you have
+a surplus of system resources (e.g. CPU-time, memory). How this is done is left up to you, but it is possible to programatically start and stop
+the supervisor on command. A caveat to this is: you may have jobs whose task definition contains an absolute "runAt"
+timestamp which may expire while the supervisor is "sleeping". Should the supervisor, run after an absolute "runAt" time, tasks will 
+will instantly fail due to timer expirations. You can mitigate this by using relative "runAfter" task
+definitions. Also know that while a buffered supervisor is "running," it will poll the buffer for new
+jobs. This polling is fast and uses a small process.nextTick loop to check for new jobs but it does cause single
 processor systems to spike as node will use 100% cpu on those systems. This is due to the fact that the event loop is never
 allowed to completely empty (the polling). It is for this reason that it is less advisable to use the local buffered
 strategy on workstations or other smaller machines.
@@ -102,7 +99,7 @@ strategy on workstations or other smaller machines.
 
 	var bufferedSupervisorWorkQueue = true; //This will tell the supervisor to start job timers immediately
 	var pathToJobHandlerRegistry = require('fs').realpathSync('../handlers'); //This is the abs path to the handlers folder
-	var supervisor = new Supervisor(pathToJobHandlerRegistry, bufferedSupervisorWorkQueue); //The supervisor will start it's nextTick callback loop waiting for work once you call start()
+	var supervisor = new Supervisor(pathToJobHandlerRegistry, bufferedSupervisorWorkQueue); //The supervisor will start its nextTick callback loop waiting for work once you call start()
 
 	var scheduler = new Scheduler(localQueue, supervisor, null); //Pass in the supervisor and also the queue strategy via constructor style DI.
 
@@ -118,16 +115,16 @@ strategy on workstations or other smaller machines.
 #### All Strategies
 
 ```javascript
-	var scheduledTask2 = {
-	    handlerModule: "Test", //corresponds to the file handlers/test.js
-	    runAfter: 3000, // msec, means this task will be fired after 10sec
+	var scheduledTask1 = {
+	    handlerModule: 'Test', //corresponds to the file handlers/test.js
+	    runAfter: 3000, // msec, means this task will be fired after 3 sec
 	    handlerFunction: "bar", //corresponds to the function bar(args, callback)
 	    args: {name: 'beef', str: 'test task2'},
 	};
-	var scheduledTask3 = {
-	    handlerModule: "Sample",
+	var scheduledTask2 = {
+	    handlerModule: 'Test',
 	    runAt: "2011/12/24 08:39:30", //timestamp (formats supported by Date() are ok)
-	    handlerFunction: "foo",
+	    handlerFunction: 'foo',
 	    args: {name: 'beans', str: 'test task1'},
 	};
 
@@ -135,7 +132,7 @@ strategy on workstations or other smaller machines.
 	 * enqueue tasks
 	 */
 
-	scheduler.schedule(scheduledTask);
+	scheduler.schedule(scheduledTask1);
 	scheduler.schedule(scheduledTask2);
 ```
 
@@ -144,20 +141,20 @@ strategy on workstations or other smaller machines.
 The local strategy has the additional capability of allowing runtime task function definitions. This allows you to delay defining the action a task will take until you are actually about to queue the task. Of course this means you cannot run the task on other processes. It has to be run within the same thread that queues the task!
 
 ```javascript
-	var scheduledTask4 = {
-	    runAfter: 2000, // msec, means this task will be fired after 10sec
+	var scheduledTask3 = {
+	    runAfter: 2000, // msec, means this task will be fired after 2 sec
 	    taskFunction: function(args, callback){ // can specify function directly in "task" property
 			console.log('local task');
 			callback();
 	    }
 	};
-	var scheduledTask5 = {
-	    runAfter: 3000, // msec, means this task will be fired after 10sec
+	var scheduledTask4 = {
+	    runAfter: 3000, // msec, means this task will be fired after 3 sec
 	    taskFunction: [function test(args, callback){ // can use array here.
 			console.log('first local task');
 			callback();
 	      },
-	      function test2(args, callback){
+	      function test2(args, callback) {
 			  console.log('second local task');
 			  callback();
 	      }
@@ -168,8 +165,8 @@ The local strategy has the additional capability of allowing runtime task functi
 	 * enqueue tasks
 	 */
 	
+	scheduler.schedule(scheduledTask3);
 	scheduler.schedule(scheduledTask4);
-	scheduler.schedule(scheduledTask5);
 	
 	//Remember to kill the supervisor if it is polling so that your script will exit cleanly
 	//NOTE: The following is ONLY needed in the local BUFFERED strategy. See README.md Local Strategy (Buffered) for more information. 
@@ -179,12 +176,12 @@ The local strategy has the additional capability of allowing runtime task functi
 
 #### Local Strategy (Buffered) ONLY: Killing Supervisor (when polling)
 
-Finally it should be noted that in order to have your code exit cleanly you will need to kill off the supervisor object which otherwise will indefinitely listen for new work. Notice the above setTimeout to kill the supervisor after 10 seconds of work. The call to supervisor.stop(); will tell the supervisor to cleanly shutdown on it's next trip around the event loop.
+In order to have your code exit cleanly, you will need to kill off the supervisor object which will indefinitely listen for new work. Notice the above setTimeout to kill the supervisor after 10 seconds of work. The call to supervisor.stop() commands the supervisor to cleanly shutdown on its pass through the event loop.
 
 ## Working
 ===========
 
-All strategies have worker objects that can use the common handler objects to take action on tasks when their time has come. BUT each strategy implements it's workers differently. This is because the persistence of the tasks is fundamentally different depending on the strategy. However the strategies can again be seperated into local and non-local strategies. The local strategy has the benefit of being able to access the memory space of the code that originaly queued the tasks to be executed BUT it is not advisable to rely upon it. You will end up with very strange race conditions and un-portable code (moving to non-local strategies won't work.)
+All strategies have worker objects that use handlers to act on tasks when scheduled. However, each strategy implements its workers differently, because the persistence of tasks is different depending on the strategy. Strategies can again be seperated into local and non-local strategies. The local strategy is able to access the memory space of the code that originaly queued the tasks to be executed BUT it is not advisable to rely upon it. You will end up with very strange race conditions and un-portable code (moving to non-local strategies won't work.)
 
 ### Local Strategy
 
@@ -210,27 +207,10 @@ Nothing needs to be done! The local strategy automatically handles the workers a
 	worker.work();
 ```
 
-### RabbitMQ Strategy
-
-```javascript
-	var RabbitMQWorker = require('daida').RabbitMQ.Worker;
-
-	var rabbitMQWorker = new RabbitMQWorker(
-	    // RabbitMQ configuration
-	    {
-	        queueName: "jobscheduler", //the name of the queue to listen to for new jobs
-	        queueOption: { autoDelete: true, durable: true, exclusive: false } //rabbitmq specific options
-	    });
-	
-	//The following adds an abs path to the handler this worker should use to handle jobs
-	rabbitMQWorker.addRegistry(require('fs').realPathSync('./handlers/sample.js')); //this is relative to the location of the RabbitMQWorker file above (see JW require)
-	rabbitMQWorker.work();
-```
-
 ## Handlers
 ============
 
-Handlers are the common objects that contain the methods that are invoked by workers as determined by the task definitions. The methods are static and have a common method signature which allows them to take in an arguments object and a callback. When executed they run their pre-defined code with only the context passed via the arguments. It is possible for the handlers to contain code that modifies external resources such as databases / filesystems but great care should be taken especially when using the non-local strategies to insure that the external resources will be available at the location of the worker process which will be running the handler method. Think about the situation where their is seperate physical hardware between the code that queues a task and the code that executes the task's handler function. In general itis advisable to avoid mutating external resources and furthermore to try to make tasks idempotent. Of course this is not always possible.
+Handlers are the common objects that contain methods invoked by workers as determined by task definitions. Methods are static and have a common method signature allowing them to take an arguments object and callback. When executed, handlers run their pre-defined code with the context passed via the arguments. It is possible for the handlers to contain code modifying external resources such as databases and filesystems but take care, when using non-local strategies, to insure external resources are available at the location of the worker process running the handler method. Think about the situation where there is seperate hardware between the code that queues a task and the code that executes the task's handler function. In general it is advisable to avoid mutating external resources and furthermore to try to make tasks idempotent. Of course this is not always possible.
 
 ### All Strategies
 
