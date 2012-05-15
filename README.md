@@ -23,6 +23,8 @@ Also, all scheduling strategies contain AT LEAST the following modules:
 
 The local strategy is special; it combines both queue and worker modules into the same process. However, for clarity and reusability, we seperate the code for the 2 objects into different modules. Even though the local stratagy executes within the same thread as the scheduler, it is asynchronous by using process.nextTick to avoid blocking any other events while the timer is running. For more information about the async processing, see the Supervisor module within the local strategy.
 
+Daida (代打) is Japanese, meaning pinch-hitting.
+
 ## Install
 ===========
 1. `git clone` this repo.
