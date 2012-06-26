@@ -11,8 +11,8 @@
 		"node": ">=0.6.0"
 	},
 	"dependencies": {
-		"daida-beanstalk": "git://github.com/ngmoco/daida-beanstalk.git",
-		"daida-local": "git://github.com/ngmoco/daida-local.git"
+		"daida-beanstalk": "git://github.com/edmondmeinfelder/daida-beanstalk.git",
+		"daida-local": "git://github.com/edmondmeinfelder/daida-local.git"
 	},
 	"config": {
 		"strategies": {
